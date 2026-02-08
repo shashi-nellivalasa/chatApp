@@ -6,6 +6,7 @@ import connectDB from "./lib/db.js";
 import bcrypt from "bcryptjs";
 import http from "http";
 import userRouter from "./routes/userRoutes.js";
+import mongoose from "mongoose";
 
 dotenv.config();
 const app = express();
@@ -21,7 +22,17 @@ app.use(
   }),
 );
 
-app.use("/api/server", async (req, res) => res.send("api is ready"));
+app.get("/health", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.db.admin().ping();
+      return res.status(200).send("OK");
+    }
+    res.status(503).send("DB not ready");
+  } catch {
+    res.status(500).send("Health check failed");
+  }
+});
 
 app.use("/auth", userRouter);
 

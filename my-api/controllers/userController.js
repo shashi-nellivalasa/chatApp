@@ -7,7 +7,7 @@ export const signUp = async (req, res) => {
   try {
     const { email, userName, password, conformPassword } = req.body;
 
-    if (!email || !password || !userName) {
+    if (!email || !password || !userName || !conformPassword) {
       return res.status(400).json({ message: "All fields are mandatory." });
     }
 
@@ -32,7 +32,7 @@ export const signUp = async (req, res) => {
     }
 
     // password validation.
-    if (password === conformPassword) {
+    if (password !== conformPassword) {
       return res
         .status(400)
         .json({ message: "Password and Conform password should match." });
