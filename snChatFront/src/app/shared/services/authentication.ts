@@ -7,14 +7,15 @@ import {
   SignInRequest,
   SignInResponse,
 } from '../models/auth-models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationService {
-  private apiUrl = 'http://localhost:4300/auth'; // Change to your backend URL
+  private apiUrl = environment.apiUrl; // Change to your backend URL
 
-  constructor(private httpClient: HttpClient) {}
+  constructor(private httpClient: HttpClient) { }
 
   /**
    * Sign up a new user
