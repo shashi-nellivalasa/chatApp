@@ -16,7 +16,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: ["http://localhost:4200", "https://your-frontend-domain.com"], // whitelist allowed origins
+    origin: ["http://localhost:4200", "https://shashi-nellivalasa.github.io"], // whitelist allowed origins
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
