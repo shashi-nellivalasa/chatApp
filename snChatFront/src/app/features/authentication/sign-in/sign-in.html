@@ -1,0 +1,18 @@
+<div class="container">
+    <div class="card flex justify-center">
+        <p-floatlabel>
+            <input id="email" pInputText [(ngModel)]="signInObject.email" [class.p-filled]="!!signInObject.email"
+                autocomplete="off" />
+            <label for="email">Email</label>
+        </p-floatlabel>
+        <p-floatlabel>
+            <input id="password" pInputText type="password" [(ngModel)]="signInObject.password"
+                [class.p-filled]="!!signInObject.password" autocomplete="off" />
+            <label for="password">Password</label>
+        </p-floatlabel>
+        <p class="text-light px-5">Don't have an account? <span class="text-primary" (click)="navToSignUp()">Sign
+                Up</span>
+        </p>
+        <div class="signInButton"><button class="btn btn-success" (click)="signIn()">Sign In</button></div>
+    </div>
+</div>

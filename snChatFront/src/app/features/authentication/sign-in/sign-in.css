@@ -1,0 +1,63 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.card {
+  border-radius: 20px;
+  padding: 2.5rem;
+  gap: 1.5rem;
+  background: rgba(19, 19, 19, 0.179);
+}
+
+input {
+  background: transparent;
+  width: 100%;
+  border-radius: 10px;
+}
+p-floatlabel input {
+  width: 100%;
+  padding: 5px;
+}
+
+p-floatlabel label {
+  color: white;
+}
+
+.p-floatlabel:has(input.p-filled) label,
+.p-floatlabel:has(input:focus) label {
+  background-color: transparent;
+  color: rgb(255, 255, 255);
+  font-weight: bolder;
+}
+
+/* --- Autofill override (Chrome / Edge / Safari) --- */
+/* keep :host ::ng-deep so it works from component css */
+:host ::ng-deep input:-webkit-autofill,
+:host ::ng-deep input:-webkit-autofill:hover,
+:host ::ng-deep input:-webkit-autofill:focus,
+:host ::ng-deep textarea:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff !important; /* text color */
+  -webkit-box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0) inset !important; /* force transparent bg */
+  box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0) inset !important;
+  background-color: transparent !important;
+  transition: background-color 5000s ease-in-out 0s !important; /* prevents default yellow flash */
+}
+
+/* Firefox / internal selector fallback */
+:host ::ng-deep input:-internal-autofill-selected {
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+.signInButton {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+}

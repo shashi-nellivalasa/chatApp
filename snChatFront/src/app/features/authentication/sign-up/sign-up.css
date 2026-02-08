@@ -1,0 +1,48 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.card {
+  border-radius: 20px;
+  padding: 2.5rem;
+  gap: 1.5rem;
+  background: rgba(19, 19, 19, 0.179);
+}
+
+input {
+  background: transparent;
+  width: 100%;
+  border-radius: 10px;
+}
+
+input:-internal-autofill-selected {
+  background: transparent;
+}
+
+p-floatlabel input {
+  width: 100%;
+  padding: 5px;
+}
+
+p-floatlabel label {
+  color: white;
+}
+
+.p-floatlabel:has(input.p-filled) label,
+.p-floatlabel:has(input:focus) label {
+  background-color: transparent;
+  color: rgb(255, 255, 255);
+  font-weight: bolder;
+}
+
+.signUpButton {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+}
