@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { SignInRequest } from '../../../shared/models/auth-models';
 import { Utils } from '../../../shared/services/utils.service';
 import { AuthenticationService } from '../../../shared/services/authentication.service';
+import { SocketService } from '../../../shared/services/socket.service';
 
 @Component({
   selector: 'app-sign-in',
@@ -23,6 +24,7 @@ export class SignIn {
     private router: Router,
     private utils: Utils,
     private AuthenticationService: AuthenticationService,
+    private socketService: SocketService
   ) {}
 
   navToSignUp() {
@@ -40,6 +42,7 @@ export class SignIn {
           console.log(res.token);
           if (res.token) {
             localStorage.setItem('accountToken', res.token);
+            this.socketService.connectSocket(); // Reconnect Socket.io using the fresh token
           }
           this.utils.success('Sign In', res.message || 'Signed in'); //Toast message
           this.router.navigate(['/features/home']); // navigate to home or main chat

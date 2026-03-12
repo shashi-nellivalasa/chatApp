@@ -13,7 +13,7 @@ import { AuthenticationService } from '../../../shared/services/authentication.s
 export class ChatList {
   chatlist: any[] = []; // Changed to any[] to accommodate the real structure
   search: string = '';
-  selectedChat: string = '';
+  selectedChat: any = null;
   currentUserId: string = '';
 
   constructor(
@@ -30,12 +30,13 @@ export class ChatList {
           this.currentUserId = user._id;
           this.loadRooms();
         }
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Failed to get current user:', err);
+        this.cdr.markForCheck();
       },
     });
-    this.cdr.markForCheck();
   }
 
   loadRooms() {
@@ -53,17 +54,18 @@ export class ChatList {
               status: otherUser?.status || 'offline',
             };
           });
+          this.cdr.markForCheck();
         }
       },
       error: (err) => {
         console.error('Failed to fetch rooms', err);
+        this.cdr.markForCheck();
       },
     });
-    this.cdr.markForCheck();
   }
 
   selectChat(index: number) {
-    this.selectedChat = this.chatlist[index].name; // You probably want roomId eventually
+    this.selectedChat = this.chatlist[index]; // Pass the whole object
     console.log('Selected Chat:', this.selectedChat);
   }
 }

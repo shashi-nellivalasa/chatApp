@@ -8,12 +8,34 @@ header {
 .chat-container {
   display: flex;
   flex-direction: row;
+  height: calc(100vh - 70px);
 }
 
 .chats {
   background-color: var(--secondary-color);
-  height: calc(100vh - 70px);
   border-radius: 10px;
   width: 70%;
   box-shadow: 0 4px 15px rgba(39, 24, 126, 0.05);
+
+  /* Make .chats a flex column so messages scroll and input sticks to the bottom */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.messages-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-input {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0; /* Never shrink — always stays at bottom */
 }

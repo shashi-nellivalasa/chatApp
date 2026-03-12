@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { usersModel } from '../../../shared/models/account-model';
 import { AuthenticationService } from '../../../shared/services/authentication.service';
@@ -20,6 +20,7 @@ export class Search implements OnInit {
 
   constructor(
     private authService: AuthenticationService,
+    private cdr: ChangeDetectorRef,
     private chatListService: ChatListService,
     private utils: Utils,
   ) {}
@@ -32,10 +33,12 @@ export class Search implements OnInit {
           this.currentUserId = user._id;
         }
         this.fetchAllUsers();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error fetching current user:', err);
         this.fetchAllUsers();
+        this.cdr.markForCheck();
       },
     });
   }
@@ -49,9 +52,11 @@ export class Search implements OnInit {
           this.filteredUsers = this.userList;
           console.log(res.users);
         }
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error fetching users:', err);
+        this.cdr.markForCheck();
       },
     });
   }
@@ -93,10 +98,12 @@ export class Search implements OnInit {
         this.utils.success('Success', `Added ${user.userName}`);
         // Visually update the UI right away
         user.added = true;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Failed to create room', err);
         this.utils.error('Error', 'Could not add the contact at this time.');
+        this.cdr.markForCheck();
       },
     });
   }

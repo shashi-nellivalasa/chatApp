@@ -53,13 +53,39 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/auth", userRouter);
 app.use("/api", chatRouter);
 
-// Socket.io connection handling
+import jwt from "jsonwebtoken";
+import User from "./models/user.js";
+
+// Socket.io connection handling with Authentication Middleware
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      return next(new Error("Authentication error: No token provided"));
+    }
+
+    const decode = jwt.verify(token, process.env.JWT_TOKEN);
+    const user = await User.findById(decode.userName).select("-password");
+    
+    if (!user) {
+      return next(new Error("Authentication error: User not found"));
+    }
+
+    // Attach user information to socket
+    socket.user = user;
+    next();
+  } catch (error) {
+    console.log("Socket Authentication Error:", error.message);
+    return next(new Error("Authentication error: Invalid token"));
+  }
+});
+
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+  console.log("An authenticated user connected:", socket.user.userName, "| Socket ID:", socket.id);
 
   socket.on("join_room", (roomId) => {
     socket.join(roomId);
-    console.log(`Socket ${socket.id} joined room ${roomId}`);
+    console.log(`User ${socket.user.userName} joined room ${roomId}`);
   });
 
   socket.on("send_message", (data) => {

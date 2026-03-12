@@ -22,4 +22,16 @@ export class ChatListService {
     const headers = { token: token || '' };
     return this.httpClient.post(`${this.apiUrl}/api/rooms`, { participants }, { headers });
   }
+
+  getMessages(roomId: string) {
+    const token = localStorage.getItem('accountToken');
+    const headers = { token: token || '' };
+    return this.httpClient.get(`${this.apiUrl}/api/rooms/${roomId}/messages`, { headers });
+  }
+
+  sendMessage(roomId: string, content: string) {
+    const token = localStorage.getItem('accountToken');
+    const headers = { token: token || '' };
+    return this.httpClient.post(`${this.apiUrl}/api/rooms/${roomId}/messages`, { content }, { headers });
+  }
 }

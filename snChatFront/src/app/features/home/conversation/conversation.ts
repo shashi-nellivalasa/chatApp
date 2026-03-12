@@ -1,7 +1,16 @@
-import { Component, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { SocketService } from '../../../shared/services/socket.service';
+import { ChatListService } from '../../../shared/services/chat-list.service';
+import { AuthenticationService } from '../../../shared/services/authentication.service';
 
 @Component({
   selector: 'app-conversation',
@@ -12,24 +21,55 @@ import { SocketService } from '../../../shared/services/socket.service';
 })
 export class Conversation implements OnChanges, OnDestroy {
   @Input()
-  selectedChat: string = '';
+  selectedChat: any = null; // Changed to any to get the object properties like roomId and name
 
   newMessage: string = '';
   messages: any[] = [];
+  currentUserId: string = '';
   private messageSubscription!: Subscription;
 
-  constructor(private socketService: SocketService) {}
+  constructor(
+    private socketService: SocketService,
+    private chatListService: ChatListService,
+    private authService: AuthenticationService,
+    private cdr: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit() {
+    this.authService.getCurrentUser().subscribe({
+      next: (user: any) => {
+        if (user && user._id) {
+          this.currentUserId = user._id;
+        }
+      },
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedChat'] && this.selectedChat) {
-      this.socketService.joinRoom(this.selectedChat);
-      this.messages = []; // Clear current messages
+    if (changes['selectedChat'] && this.selectedChat && this.selectedChat.roomId) {
+      const roomId = this.selectedChat.roomId;
+      this.socketService.joinRoom(roomId);
+      this.messages = []; // Clear current messages while loading
 
+      // Fetch message history
+      this.chatListService.getMessages(roomId).subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this.messages = res.messages;
+            this.cdr.markForCheck();
+          }
+        },
+        error: (err) => {
+          console.error('Error fetching messages: ', err);
+        },
+      });
+
+      // Listen for socket messages
       if (!this.messageSubscription) {
         this.messageSubscription = this.socketService.receiveMessages().subscribe((msg) => {
-          // ensure sender isn't duplicated if we already added it optimistically
-          if (msg.sender !== 'Me') {
+          if (msg.roomId === this.selectedChat.roomId && msg.sender._id !== this.currentUserId) {
             this.messages.push(msg);
+            this.cdr.markForCheck();
           }
         });
       }
@@ -37,19 +77,31 @@ export class Conversation implements OnChanges, OnDestroy {
   }
 
   sendMessage() {
-    if (this.newMessage.trim() && this.selectedChat) {
-      const msgData = {
-        sender: 'Me',
-        content: this.newMessage,
-        timestamp: new Date(),
-      };
-
-      this.socketService.sendMessage(this.selectedChat, msgData);
-
-      // Optimistically add to UI
-      this.messages.push(msgData);
-      this.newMessage = '';
+    if (this.newMessage.trim() === '' || !this.selectedChat?.roomId || !this.currentUserId) {
+      return;
     }
+
+    const content = this.newMessage;
+    const roomId = this.selectedChat.roomId;
+
+    this.chatListService.sendMessage(roomId, content).subscribe({
+      next: (res: any) => {
+        if (res.success && res.message) {
+          // Push securely tracked message to local list
+          this.messages.push(res.message);
+
+          // Emit socket so the other person receives it instantly
+          // The other user's app receives this data through the `receiveMessages` event
+          this.socketService.sendMessage(roomId, res.message);
+
+          this.newMessage = '';
+          this.cdr.markForCheck();
+        }
+      },
+      error: (err) => {
+        console.error('Failed to send message:', err);
+      },
+    });
   }
 
   ngOnDestroy(): void {

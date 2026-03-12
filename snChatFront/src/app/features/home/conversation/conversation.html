@@ -1,29 +1,33 @@
 <div class="conversation">
   <div class="chat-dashboard">
     <header>
-      <h1>{{ selectedChat }}</h1>
+      @if (selectedChat) {
+        <h1>{{ selectedChat.name }}</h1>
+      } @else {
+        <h1>Select a chat</h1>
+      }
     </header>
     <div class="chat-container">
-      <div class="chats" style="display: flex; flex-direction: column; overflow-y: auto">
-        @for (msg of messages; track $index) {
-          <div
-            class="message"
-            style="
-              margin-bottom: 0.5rem;
-              padding: 0.5rem;
-              border-radius: 8px;
-              background-color: #f1f1f1;
-              width: fit-content;
-              max-width: 80%;
-            "
-          >
-            <strong>{{ msg.sender }}:</strong> {{ msg.content }}
-          </div>
-        }
-        <div
-          class="chat-input"
-          style="padding: 1rem; display: flex; gap: 1rem; border-top: 1px solid #ccc"
-        >
+      <div class="chats">
+        <!-- Scrollable messages -->
+        <div class="messages-area">
+          @for (msg of messages; track $index) {
+            <div
+              class="message"
+              [style.align-self]="msg.sender?._id === currentUserId ? 'flex-end' : 'flex-start'"
+              [style.background-color]="
+                msg.sender?._id === currentUserId ? 'var(--accent-color, #007bff)' : '#f1f1f1'
+              "
+              [style.color]="msg.sender?._id === currentUserId ? 'white' : 'black'"
+              style="padding: 0.5rem 1rem; border-radius: 15px; width: fit-content; max-width: 80%"
+            >
+              {{ msg.content }}
+            </div>
+          }
+        </div>
+
+        <!-- Input bar — stays at bottom of .chats flex column -->
+        <div class="chat-input">
           <input
             type="text"
             [(ngModel)]="newMessage"
@@ -47,7 +51,21 @@
         </div>
       </div>
       <div class="info">
-        <p>{{ selectedChat }}'s Info works!</p>
+        @if (selectedChat) {
+          <p>{{ selectedChat.name }}'s Info</p>
+          @if (selectedChat.image) {
+            <img
+              [src]="selectedChat.image"
+              style="
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin-top: 1rem;
+              "
+            />
+          }
+        }
       </div>
     </div>
   </div>

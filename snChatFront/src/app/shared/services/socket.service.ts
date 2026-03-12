@@ -12,10 +12,26 @@ export class SocketService {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     if (isPlatformBrowser(this.platformId)) {
-      this.socket = io(environment.apiUrl || 'http://localhost:3000', {
-        withCredentials: true,
-      });
+      this.connectSocket();
     }
+  }
+
+  // Allow the app to reconnect with a fresh token dynamically (e.g. after login)
+  connectSocket() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    // Disconnect existing socket first if we have one
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+
+    const token = localStorage.getItem('accountToken') || '';
+    this.socket = io(environment.apiUrl || 'http://localhost:3000', {
+      withCredentials: true,
+      auth: {
+        token: token,
+      },
+    });
   }
 
   joinRoom(roomId: string) {

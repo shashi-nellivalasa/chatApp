@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { Utils } from '../../shared/services/utils.service';
 import { AuthenticationService } from '../../shared/services/authentication.service';
+import { SocketService } from '../../shared/services/socket.service';
 
 @Component({
   selector: 'app-home',
@@ -14,11 +15,13 @@ export class Home {
     private router: Router,
     private utils: Utils,
     private AuthenticationService: AuthenticationService,
+    private socketService: SocketService,
   ) {}
   signOut() {
     this.AuthenticationService.signOut().subscribe({
       next: (res) => {
         localStorage.removeItem('accountToken');
+        this.socketService.disconnect(); // Disconnect socket
         this.utils.warn('Log out', res.message || 'Logged Out');
         // navigate to home or main chat
         this.router.navigate(['/features/authentication']);
