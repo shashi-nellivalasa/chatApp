@@ -1,18 +1,20 @@
-.container {
+.auth-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
   padding: 2rem;
-  border-radius: 8px;
+  width: 100%;
+  background-color: var(--accent-color);
 }
 
 .card {
   border-radius: 20px;
   padding: 2.5rem;
   gap: 1.5rem;
-  background: rgba(19, 19, 19, 0.179);
+  background: var(--secondary-color);
+  box-shadow: 0 10px 30px rgba(39, 24, 126, 0.1);
 }
 
 input {
@@ -22,7 +24,7 @@ input {
 }
 
 input:-internal-autofill-selected {
-  background: transparent;
+  background: var(--secondary-color);
 }
 
 p-floatlabel input {
@@ -31,13 +33,13 @@ p-floatlabel input {
 }
 
 p-floatlabel label {
-  color: white;
+  color: var(--muted-color);
 }
 
 .p-floatlabel:has(input.p-filled) label,
 .p-floatlabel:has(input:focus) label {
-  background-color: transparent;
-  color: rgb(255, 255, 255);
+  background-color: var(--secondary-color);
+  color: var(--accent-color);
   font-weight: bolder;
 }
 
@@ -45,4 +47,30 @@ p-floatlabel label {
   display: flex;
   justify-content: end;
   width: 100%;
+}
+
+.btn-success {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--main-color);
+}
+
+.btn-success:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.text-primary {
+  color: var(--accent-color) !important;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.text-light {
+  color: var(--muted-color) !important;
+}
+
+.sn,
+.chat {
+  fill: var(--accent-color);
 }

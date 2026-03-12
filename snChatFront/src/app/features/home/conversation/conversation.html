@@ -1,1 +1,54 @@
-<p>conversation works!</p>
+<div class="conversation">
+  <div class="chat-dashboard">
+    <header>
+      <h1>{{ selectedChat }}</h1>
+    </header>
+    <div class="chat-container">
+      <div class="chats" style="display: flex; flex-direction: column; overflow-y: auto">
+        @for (msg of messages; track $index) {
+          <div
+            class="message"
+            style="
+              margin-bottom: 0.5rem;
+              padding: 0.5rem;
+              border-radius: 8px;
+              background-color: #f1f1f1;
+              width: fit-content;
+              max-width: 80%;
+            "
+          >
+            <strong>{{ msg.sender }}:</strong> {{ msg.content }}
+          </div>
+        }
+        <div
+          class="chat-input"
+          style="padding: 1rem; display: flex; gap: 1rem; border-top: 1px solid #ccc"
+        >
+          <input
+            type="text"
+            [(ngModel)]="newMessage"
+            placeholder="Type a message..."
+            style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc"
+            (keydown.enter)="sendMessage()"
+          />
+          <button
+            (click)="sendMessage()"
+            style="
+              padding: 0.5rem 1rem;
+              border-radius: 4px;
+              background-color: var(--accent-color);
+              color: white;
+              border: none;
+              cursor: pointer;
+            "
+          >
+            Send
+          </button>
+        </div>
+      </div>
+      <div class="info">
+        <p>{{ selectedChat }}'s Info works!</p>
+      </div>
+    </div>
+  </div>
+</div>

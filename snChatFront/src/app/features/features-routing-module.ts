@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { authGuard } from '../shared/guards/auth.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: 'authentication', pathMatch: 'full' },
@@ -11,6 +12,7 @@ const routes: Routes = [
   },
   {
     path: 'home',
+    canActivate: [authGuard],
     // dynamic import: path matches existing file `home-module.ts`
     loadChildren: () => import('./home/home-module').then((m) => m.HomeModule),
   },

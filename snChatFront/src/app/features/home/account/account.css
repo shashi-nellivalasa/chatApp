@@ -1,0 +1,85 @@
+.profile {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  align-items: center;
+  gap: 1rem;
+  margin: auto;
+  background-color: var(--secondary-color);
+}
+
+.details {
+  max-width: 80%;
+}
+
+.profile__image,
+.profile__placeholder {
+  margin: 40px 50px;
+  background-color: white;
+  width: 50%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  object-fit: cover;
+  border: none;
+  outline: none;
+}
+
+.name,
+.nameAndCreate,
+.email,
+.oldPassword,
+.newPassword {
+  margin-bottom: 20px;
+}
+
+.name,
+.newPassword,
+.nameAndCreate {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+label {
+  padding-left: 5px;
+  width: 140px;
+  margin-bottom: 10px;
+}
+
+input {
+  height: 30px;
+  border-radius: 10px;
+  padding: 5px;
+  width: 100%; /* or a fixed width like 200px */
+  box-sizing: border-box; /* This ensures the padding doesn't make it exceed 100% width */
+}
+
+.saveButtonContainer {
+  display: flex;
+  justify-content: right;
+}
+
+.profile__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary-color);
+  border: 2px dashed var(--accent-color);
+}
+
+.profile__placeholder svg {
+  width: 50%;
+  height: 50%;
+  fill: var(--accent-color);
+  opacity: 0.5;
+}
+
+.saveButton {
+  width: 100px;
+}
+
+.profile__actions,
+.profile__avatar {
+  display: flex;
+  justify-content: center;
+}

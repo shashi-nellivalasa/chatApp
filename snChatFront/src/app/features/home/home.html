@@ -1,16 +1,32 @@
-<header>
-    <nav>
-        <div class="logo">
-            <img class="logo-svg" src="assets/logo.svg" alt="SN Chat">
-        </div>
-        <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#portfolio">Portfolio</a></li>
-            <li><a href="#testimonials">Reviews</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-        <button class="btn btn-danger" (click)="signOut()">Sign out</button>
-    </nav>
-</header>
+<div class="main">
+  <nav>
+    <ul>
+      <li>
+        <a routerLink="chat-list" routerLinkActive="active"
+          ><i class="fa-solid fa-envelope-open"></i
+        ></a>
+      </li>
+      <li>
+        <a routerLink="savedChats" routerLinkActive="active"
+          ><i class="fa-solid fa-bookmark"></i
+        ></a>
+      </li>
+      <li>
+        <a routerLink="search" routerLinkActive="active"
+          ><i class="fa-solid fa-magnifying-glass"></i
+        ></a>
+      </li>
+      <li>
+        <a routerLink="account" routerLinkActive="active"
+          ><i class="fa-solid fa-screwdriver-wrench"></i
+        ></a>
+      </li>
+      <li (click)="signOut()">
+        <i class="fa-solid fa-right-from-bracket" style="color: #ff7d7d"></i>
+      </li>
+    </ul>
+  </nav>
+  <div class="content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

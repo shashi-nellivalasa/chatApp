@@ -1,6 +1,47 @@
 /* You can add global styles to this file, and also import other style files */
+/* 1. Default Light Mode */
+:root {
+  --main-color: #f7f7ff; /* Ghost White */
+  --secondary-color: #ffffff; /* pure white for cards */
+  --text-color: #27187e; /* Indigo / Violet-Blue */
+  --accent-color: #27187e; /* Primary Brand Color */
+  --accent-hover: #1b105a; /* Darker Indigo */
+  --muted-color: #a0a4b8; /* Soft Indigo Gray */
+}
+
+/* 2. Automatic Dark Mode (System Preference) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --main-color: #1a1a2e; /* Deep dark blue/purple */
+    --secondary-color: #23233b;
+    --text-color: #f7f7ff;
+    --accent-color: #4b3d99; /* Lighter Indigo for dark mode visibility */
+    --accent-hover: #5d4ca8;
+    --muted-color: #8f92a1;
+  }
+}
+
+/* Scrollbar styling - hide track, show only thumb */
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.7);
+}
+
 * {
-  color: white;
+  color: var(--text-color);
+  box-sizing: border-box;
 }
 
 /* ensure full viewport and no margins */
@@ -8,5 +49,30 @@ html,
 body {
   height: 100%;
   margin: 0;
+  padding: 0;
 }
 
+.button {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.button:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.button-outline {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.button-outline:hover {
+  background-color: var(--accent-color);
+  color: white;
+}

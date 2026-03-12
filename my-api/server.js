@@ -2,15 +2,23 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./lib/db.js";
-// import User from "./models/user.js";
-import bcrypt from "bcryptjs";
 import http from "http";
+import { Server } from "socket.io";
 import userRouter from "./routes/userRoutes.js";
+import chatRouter from "./routes/chatRoutes.js";
 import mongoose from "mongoose";
 
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:4200", "https://shashi-nellivalasa.github.io"],
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 app.use(express.json());
 connectDB();
 
@@ -34,8 +42,39 @@ app.get("/health", async (req, res) => {
   }
 });
 
-app.use("/auth", userRouter);
+import path from "path";
+import { fileURLToPath } from "url";
 
-server.listen(process.env.PORT, () => {
-  console.log(`http://localhost:${process.env.PORT}/`);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use("/public", express.static(path.join(__dirname, "public")));
+
+app.use("/auth", userRouter);
+app.use("/api", chatRouter);
+
+// Socket.io connection handling
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("join_room", (roomId) => {
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
+  });
+
+  socket.on("send_message", (data) => {
+    // Expecting data to have { roomId, message, senderId }
+    socket.to(data.roomId).emit("receive_message", data);
+    console.log(data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+server.listen(process.env.PORT || 3000, () => {
+  console.log(
+    `Server is running! http://localhost:${process.env.PORT || 3000}/`,
+  );
 });

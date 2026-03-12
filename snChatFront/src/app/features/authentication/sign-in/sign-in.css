@@ -1,19 +1,20 @@
-.container {
+.auth-container {
   width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
   padding: 2rem;
-  border-radius: 8px;
+  background-color: var(--accent-color);
 }
 
 .card {
   border-radius: 20px;
   padding: 2.5rem;
   gap: 1.5rem;
-  background: rgba(19, 19, 19, 0.179);
+  background: var(--secondary-color);
+  box-shadow: 0 10px 30px rgba(39, 24, 126, 0.1);
 }
 
 input {
@@ -27,13 +28,13 @@ p-floatlabel input {
 }
 
 p-floatlabel label {
-  color: white;
+  color: var(--muted-color);
 }
 
 .p-floatlabel:has(input.p-filled) label,
 .p-floatlabel:has(input:focus) label {
-  background-color: transparent;
-  color: rgb(255, 255, 255);
+  background-color: var(--secondary-color);
+  color: var(--accent-color);
   font-weight: bolder;
 }
 
@@ -43,21 +44,47 @@ p-floatlabel label {
 :host ::ng-deep input:-webkit-autofill:hover,
 :host ::ng-deep input:-webkit-autofill:focus,
 :host ::ng-deep textarea:-webkit-autofill {
-  -webkit-text-fill-color: #ffffff !important; /* text color */
-  -webkit-box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0) inset !important; /* force transparent bg */
-  box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0) inset !important;
-  background-color: transparent !important;
+  -webkit-text-fill-color: var(--text-color) !important; /* text color */
+  -webkit-box-shadow: 0 0 0px 1000px var(--secondary-color) inset !important; /* force transparent bg */
+  box-shadow: 0 0 0px 1000px var(--secondary-color) inset !important;
+  background-color: var(--secondary-color) !important;
   transition: background-color 5000s ease-in-out 0s !important; /* prevents default yellow flash */
 }
 
 /* Firefox / internal selector fallback */
 :host ::ng-deep input:-internal-autofill-selected {
-  background: transparent !important;
-  color: #ffffff !important;
+  background: var(--secondary-color) !important;
+  color: var(--text-color) !important;
 }
 
 .signInButton {
   display: flex;
   justify-content: end;
   width: 100%;
+}
+
+.btn-success {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--main-color);
+}
+
+.btn-success:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.text-primary {
+  color: var(--accent-color) !important;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.text-light {
+  color: var(--muted-color) !important;
+}
+
+.sn,
+.chat {
+  fill: var(--accent-color);
 }

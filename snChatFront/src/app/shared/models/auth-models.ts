@@ -3,6 +3,8 @@ export interface SignUpRequest {
   email: string;
   password: string;
   confirmPassword: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface SignUpResponse {

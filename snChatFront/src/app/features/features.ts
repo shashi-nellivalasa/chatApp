@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AuthenticationRoutingModule } from "./authentication/authentication-routing-module";
+import { AuthenticationRoutingModule } from './authentication/authentication-routing-module';
 
 @Component({
   selector: 'app-features',
@@ -7,6 +7,4 @@ import { AuthenticationRoutingModule } from "./authentication/authentication-rou
   templateUrl: './features.html',
   styleUrl: './features.css',
 })
-export class Features {
-
-}
+export class Features {}

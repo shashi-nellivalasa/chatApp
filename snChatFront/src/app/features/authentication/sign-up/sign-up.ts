@@ -3,9 +3,9 @@ import { Router } from '@angular/router';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthenticationService } from '../../../shared/services/authentication';
+import { AuthenticationService } from '../../../shared/services/authentication.service';
 import { SignUpRequest } from '../../../shared/models/auth-models';
-import { Utils } from '../../../shared/services/utils';
+import { Utils } from '../../../shared/services/utils.service';
 
 @Component({
   selector: 'app-sign-up',
@@ -19,6 +19,8 @@ export class SignUp {
     email: '',
     password: '',
     confirmPassword: '',
+    firstName: '',
+    lastName: '',
   };
 
   isLoading: boolean = false;
@@ -35,10 +37,6 @@ export class SignUp {
 
   signUp() {
     // Validation
-    if (!this.signUpObject.userName || !this.signUpObject.email || !this.signUpObject.password) {
-      console.log('no name');
-    }
-
     if (!this.signUpObject.userName || !this.signUpObject.email || !this.signUpObject.password) {
       this.utils.info('signUp', 'All fields are required.');
       return;
@@ -61,7 +59,7 @@ export class SignUp {
         if (response.success) {
           // Save token if provided
           if (response.token) {
-            localStorage.setItem('authToken', response.token);
+            localStorage.setItem('accountToken', response.token);
           }
           // Navigate to home
           this.router.navigate(['features/home']);

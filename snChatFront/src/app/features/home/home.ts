@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { Utils } from '../../shared/services/utils';
-import { AuthenticationService } from '../../shared/services/authentication';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Utils } from '../../shared/services/utils.service';
+import { AuthenticationService } from '../../shared/services/authentication.service';
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -16,8 +16,9 @@ export class Home {
     private AuthenticationService: AuthenticationService,
   ) {}
   signOut() {
-    this.AuthenticationService.logout().subscribe({
+    this.AuthenticationService.signOut().subscribe({
       next: (res) => {
+        localStorage.removeItem('accountToken');
         this.utils.warn('Log out', res.message || 'Logged Out');
         // navigate to home or main chat
         this.router.navigate(['/features/authentication']);

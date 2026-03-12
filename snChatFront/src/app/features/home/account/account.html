@@ -1,0 +1,74 @@
+@if (userAccount) {
+  <div class="profile">
+    <div class="profile-container">
+      <div class="profile__avatar">
+        @if (userAccount.profilePicUrl) {
+          <img class="profile__image" [src]="userAccount.profilePicUrl" alt="Profile Picture" />
+        } @else {
+          <div class="profile__placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#aaa">
+              <path
+                d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+              />
+            </svg>
+          </div>
+        }
+      </div>
+      <div class="profile__actions">
+        <input type="file" #fileInput style="display: none;" accept="image/*" (change)="onFileSelected($event)" />
+        
+        @if (!selectedFile) {
+          <button class="button-outline" (click)="fileInput.click()">Change</button>
+        } @else {
+          <button class="button-outline saveButton" (click)="uploadImage()" [disabled]="isUploading">
+            {{ isUploading ? 'Saving...' : 'Save Image' }}
+          </button>
+          <button class="button" style="margin-left: 10px; border: none; background: transparent; color: #aaa;" (click)="selectedFile = null; ngOnInit();">Cancel</button>
+        }
+      </div>
+    </div>
+    <div class="details">
+      <div class="nameAndCreate">
+        <div class="userName">
+          <label for="userName">userName:</label>
+          <input type="text" id="userName" disabled [(ngModel)]="userAccount.userName" />
+        </div>
+        <div class="createdDate">
+          <label for="createdDate">createdDate:</label>
+          <input type="date" id="createdDate" disabled [(ngModel)]="userAccount.createdAt" />
+        </div>
+      </div>
+      <div class="name">
+        <div class="first-name">
+          <label for="first-name">First name:</label>
+          <input type="text" id="first-name" [(ngModel)]="userAccount.firstName" />
+        </div>
+        <div class="last-name">
+          <label for="last-name">Last name:</label>
+          <input type="text" id="last-name" [(ngModel)]="userAccount.lastName" />
+        </div>
+      </div>
+      <div class="email">
+        <label for="email">email:</label>
+        <input type="email" id="email" [(ngModel)]="userAccount.email" />
+      </div>
+      <div class="oldPassword">
+        <label for="oldPassword">Password:</label>
+        <input type="text" id="oldPassword" />
+      </div>
+      <div class="newPassword">
+        <div class="newPassword1">
+          <label for="newPassword">New Password:</label>
+          <input type="text" id="newPassword" />
+        </div>
+        <div class="confirmPassword">
+          <label for="confirmPassword">Confirm Password:</label>
+          <input type="text" id="confirmNewPassword" />
+        </div>
+      </div>
+      <div class="saveButtonContainer">
+        <button class="button-outline saveButton">Save</button>
+      </div>
+    </div>
+  </div>
+}

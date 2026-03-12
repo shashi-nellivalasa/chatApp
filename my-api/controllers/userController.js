@@ -5,9 +5,10 @@ import bcrypt from "bcryptjs";
 // controller for user signup
 export const signUp = async (req, res) => {
   try {
-    const { email, userName, password, conformPassword } = req.body;
+    const { email, userName, firstName, lastName, password, confirmPassword } =
+      req.body;
 
-    if (!email || !password || !userName || !conformPassword) {
+    if (!email || !password || !userName || !confirmPassword) {
       return res.status(400).json({ message: "All fields are mandatory." });
     }
 
@@ -32,7 +33,7 @@ export const signUp = async (req, res) => {
     }
 
     // password validation.
-    if (password !== conformPassword) {
+    if (password !== confirmPassword) {
       return res
         .status(400)
         .json({ message: "Password and Conform password should match." });
@@ -59,6 +60,8 @@ export const signUp = async (req, res) => {
       email: cleanEmail,
       userName,
       password: hashedPassword,
+      firstName,
+      lastName,
     });
 
     const token = generateToken(newUser._id);
@@ -105,6 +108,10 @@ export const signIn = async (req, res) => {
         .json({ success: false, message: "wrong password." });
     }
 
+    // Update the user's status to "online" in the database
+    matchedUser.status = "online";
+    await matchedUser.save();
+
     const token = generateToken(matchedUser._id);
     return res.status(200).json({
       success: true,
@@ -120,15 +127,116 @@ export const signIn = async (req, res) => {
   }
 };
 
-export const logOut = async (req, res) => {
-  // Since JWT is stateless, we can't truly "sign out" on the server side.
-  // However, we can instruct the client to delete the token.
-  return res
-    .status(200)
-    .json({ success: true, message: "Signed out successfully." });
+export const signOut = async (req, res) => {
+  try {
+    // If the route is protected, we can set status to offline
+    if (req.user) {
+      await User.findByIdAndUpdate(req.user._id, { status: "offline" });
+    }
+
+    // Since JWT is stateless, we can't truly "sign out" on the server side.
+    // However, we can instruct the client to delete the token.
+    return res
+      .status(200)
+      .json({ success: true, message: "Signed out successfully." });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Error during sign out." });
+  }
 };
 
 // Controller to check if user is authenticated
 export const checkAuth = (req, res) => {
   return res.status(200).json({ success: true, user: req.user });
+};
+
+import Room from "../models/room.js";
+
+// fetching all users
+export const getUsers = async (req, res) => {
+  try {
+    // 1. Fetch all users except passwords
+    const users = await User.find({}, "-password").lean();
+
+    // 2. Find all rooms the current user is a participant of
+    const currentUserId = req.user._id;
+    const rooms = await Room.find({ participants: currentUserId });
+
+    // 3. Extract all unique user IDs that the current user already has a room with
+    const connectedUserIds = new Set();
+    rooms.forEach((room) => {
+      room.participants.forEach((participantId) => {
+        if (participantId.toString() !== currentUserId.toString()) {
+          connectedUserIds.add(participantId.toString());
+        }
+      });
+    });
+
+    // 4. Map the users and append the `added` boolean
+    const usersWithAddedStatus = users.map((user) => {
+      return {
+        ...user,
+        added: connectedUserIds.has(user._id.toString()),
+      };
+    });
+
+    return res.status(200).json({ success: true, users: usersWithAddedStatus });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// get current user profile
+export const getCurrentUser = async (req, res) => {
+  try {
+    return res.status(200).json(req.user);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+import sharp from "sharp";
+
+// upload profile picture
+export const uploadProfilePic = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No image provided" });
+    }
+
+    // Compress and resize the image directly from the buffer using sharp
+    const compressedBuffer = await sharp(req.file.buffer)
+      .resize({ width: 300, height: 300, fit: "cover" }) // Resize to 300x300, crop to fit
+      .webp({ quality: 80 }) // Convert to format WebP at 80% quality
+      .toBuffer();
+
+    // Convert the compressed file buffer to a Base64 encoded string
+    const base64Image = compressedBuffer.toString("base64");
+    // Create the Data URI string to be used directly in an <img> src tag
+    const imageUrl = `data:image/webp;base64,${base64Image}`;
+
+    // Update user profile in MongoDB
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { profilePicUrl: imageUrl },
+      { new: true },
+    ).select("-password");
+
+    return res.status(200).json({
+      success: true,
+      profilePicUrl: imageUrl,
+      user: updatedUser,
+      message:
+        "Profile picture compressed and uploaded to MongoDB successfully.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error during upload" });
+  }
 };

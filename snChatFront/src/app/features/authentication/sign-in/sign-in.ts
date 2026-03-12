@@ -4,8 +4,8 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SignInRequest } from '../../../shared/models/auth-models';
-import { Utils } from '../../../shared/services/utils';
-import { AuthenticationService } from '../../../shared/services/authentication';
+import { Utils } from '../../../shared/services/utils.service';
+import { AuthenticationService } from '../../../shared/services/authentication.service';
 
 @Component({
   selector: 'app-sign-in',
@@ -37,9 +37,12 @@ export class SignIn {
     } else {
       this.AuthenticationService.signIn(this.signInObject).subscribe({
         next: (res) => {
-          this.utils.success('Sign In', res.message || 'Signed in');
-          // navigate to home or main chat
-          this.router.navigate(['/features/home']);
+          console.log(res.token);
+          if (res.token) {
+            localStorage.setItem('accountToken', res.token);
+          }
+          this.utils.success('Sign In', res.message || 'Signed in'); //Toast message
+          this.router.navigate(['/features/home']); // navigate to home or main chat
         },
         error: (err) => {
           console.error('signIn error', err);

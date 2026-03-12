@@ -1,0 +1,19 @@
+header {
+  width: 100%;
+  top: 0;
+  left: 0;
+  height: 70px;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.chats {
+  background-color: var(--secondary-color);
+  height: calc(100vh - 70px);
+  border-radius: 10px;
+  width: 70%;
+  box-shadow: 0 4px 15px rgba(39, 24, 126, 0.05);
+}
