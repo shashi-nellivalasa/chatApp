@@ -10,7 +10,7 @@
     <div class="chat-container">
       <div class="chats">
         <!-- Scrollable messages -->
-        <div class="messages-area">
+        <div class="messages-area" #messagesArea>
           @for (msg of messages; track $index) {
             <div
               class="message"
@@ -63,6 +63,7 @@
                 object-fit: cover;
                 margin-top: 1rem;
               "
+              loading="lazy"
             />
           }
         }

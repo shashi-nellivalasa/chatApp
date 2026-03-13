@@ -83,3 +83,46 @@ input {
   display: flex;
   justify-content: center;
 }
+
+@media (max-width: 768px) {
+  .profile {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100%;
+    padding: 20px 16px 80px;
+    align-items: start;
+    overflow-y: auto;
+  }
+
+  .profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .profile__image,
+  .profile__placeholder {
+    margin: 0;
+    width: 120px;
+  }
+
+  .details {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .name,
+  .newPassword,
+  .nameAndCreate {
+    grid-template-columns: 1fr;
+  }
+
+  .saveButtonContainer {
+    justify-content: center;
+  }
+
+  .saveButton {
+    width: 100%;
+  }
+}

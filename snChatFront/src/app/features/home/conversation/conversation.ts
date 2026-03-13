@@ -5,6 +5,9 @@ import {
   SimpleChanges,
   OnDestroy,
   ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
+  AfterViewChecked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -19,14 +22,17 @@ import { AuthenticationService } from '../../../shared/services/authentication.s
   templateUrl: './conversation.html',
   styleUrl: './conversation.css',
 })
-export class Conversation implements OnChanges, OnDestroy {
+export class Conversation implements OnChanges, OnDestroy, AfterViewChecked {
   @Input()
   selectedChat: any = null; // Changed to any to get the object properties like roomId and name
+
+  @ViewChild('messagesArea') private messagesArea!: ElementRef;
 
   newMessage: string = '';
   messages: any[] = [];
   currentUserId: string = '';
   private messageSubscription!: Subscription;
+  private shouldScroll = false;
 
   constructor(
     private socketService: SocketService,
@@ -56,6 +62,7 @@ export class Conversation implements OnChanges, OnDestroy {
         next: (res: any) => {
           if (res.success) {
             this.messages = res.messages;
+            this.shouldScroll = true;
             this.cdr.markForCheck();
           }
         },
@@ -69,6 +76,7 @@ export class Conversation implements OnChanges, OnDestroy {
         this.messageSubscription = this.socketService.receiveMessages().subscribe((msg) => {
           if (msg.roomId === this.selectedChat.roomId && msg.sender._id !== this.currentUserId) {
             this.messages.push(msg);
+            this.shouldScroll = true;
             this.cdr.markForCheck();
           }
         });
@@ -95,6 +103,7 @@ export class Conversation implements OnChanges, OnDestroy {
           this.socketService.sendMessage(roomId, res.message);
 
           this.newMessage = '';
+          this.shouldScroll = true;
           this.cdr.markForCheck();
         }
       },
@@ -102,6 +111,20 @@ export class Conversation implements OnChanges, OnDestroy {
         console.error('Failed to send message:', err);
       },
     });
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.shouldScroll) {
+      this.scrollToBottom();
+      this.shouldScroll = false;
+    }
+  }
+
+  private scrollToBottom(): void {
+    try {
+      const el = this.messagesArea?.nativeElement;
+      if (el) el.scrollTop = el.scrollHeight;
+    } catch (e) {}
   }
 
   ngOnDestroy(): void {

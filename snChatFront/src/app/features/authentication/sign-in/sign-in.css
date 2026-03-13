@@ -80,11 +80,35 @@ p-floatlabel label {
   cursor: pointer;
 }
 
-.text-light {
+.signUp-text {
   color: var(--muted-color) !important;
 }
 
 .sn,
 .chat {
   fill: var(--accent-color);
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    justify-content: flex-start;
+    padding: 1.5rem 1rem;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .card {
+    width: 100%;
+    padding: 1.5rem 1.25rem;
+    border-radius: 14px;
+    gap: 1.2rem;
+  }
+
+  .signInButton {
+    justify-content: center;
+  }
+
+  .signInButton .btn {
+    width: 100%;
+  }
 }
