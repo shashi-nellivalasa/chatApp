@@ -17,4 +17,5 @@ export interface usersModel {
   lastName?: string;
   profilePicUrl?: string; // Optional field for the user's avatar
   added?: boolean;
+  status?: string;
 }

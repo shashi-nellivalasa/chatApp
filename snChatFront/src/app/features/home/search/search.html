@@ -1,35 +1,64 @@
 <div class="searchContainer">
   <div class="searchBox">
-    <input class="searchInput" type="text" placeholder="Search by username..." (input)="searchAccount($event)" />
+    <input
+      class="searchInput"
+      type="text"
+      placeholder="Search by username..."
+      (input)="searchAccount($event)"
+    />
   </div>
   <div class="list">
     <p-table [value]="filteredUsers">
       <ng-template #body let-user>
-        <tr (click)="selectUser(user._id)" style="cursor: pointer;">
-          <td style="width: 50px;">
+        <tr>
+          <td style="width: 50px">
             @if (user.profilePicUrl) {
-              <img [src]="user.profilePicUrl" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
+              <img
+                [src]="user.profilePicUrl"
+                alt="avatar"
+                style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover"
+              />
             } @else {
-              <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #ddd; display: flex; align-items: center; justify-content: center;">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#aaa" width="24" height="24">
-                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+              <div
+                style="
+                  width: 40px;
+                  height: 40px;
+                  border-radius: 50%;
+                  background-color: #ddd;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="#aaa"
+                  width="24"
+                  height="24"
+                >
+                  <path
+                    d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+                  />
                 </svg>
               </div>
             }
           </td>
           <td>{{ user.userName }}</td>
           <td>
-            @if (user.added) {
-              <span style="color: green;">Added</span>
-            } @else {
-              <button class="btn btn-success" (click)="addContact($event, user)">Add</button>
+            @if (user.status == 'add') {
+              <button (click)="sendRequest(user)">Add</button>
+            } @else if (user.status == 'requested') {
+              <button disabled>Requested</button>
+            } @else if (user.status == 'added') {
+              <button disabled>Added</button>
             }
           </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="3" style="text-align: center; padding: 20px;">No users found.</td>
+          <td colspan="3" style="text-align: center; padding: 20px">No users found.</td>
         </tr>
       </ng-template>
     </p-table>

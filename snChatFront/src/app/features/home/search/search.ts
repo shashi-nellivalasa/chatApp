@@ -77,11 +77,6 @@ export class Search implements OnInit {
     }
   }
 
-  selectUser(id: string) {
-    console.log('Selected user ID:', id);
-    // TODO: Navigate to chat or user profile
-  }
-
   addContact(event: Event, user: usersModel) {
     event.stopPropagation(); // Prevents row click (selectUser) from triggering
 
@@ -107,4 +102,6 @@ export class Search implements OnInit {
       },
     });
   }
+
+  sendRequest(user: usersModel) {}
 }
