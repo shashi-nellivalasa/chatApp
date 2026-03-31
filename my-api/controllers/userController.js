@@ -1,6 +1,7 @@
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
+import FriendRequest from "../models/friendRequest.js";
 
 // controller for user signup
 export const signUp = async (req, res) => {
@@ -162,7 +163,13 @@ export const getUsers = async (req, res) => {
     const currentUserId = req.user._id;
     const rooms = await Room.find({ participants: currentUserId });
 
-    // 3. Extract all unique user IDs that the current user already has a room with
+    // 3. Find all friend requests where current user is the sender
+    const sentRequests = await FriendRequest.find({
+      sender: currentUserId,
+      status: "pending",
+    });
+
+    // 4. Extract all unique user IDs that the current user already has a room with
     const connectedUserIds = new Set();
     rooms.forEach((room) => {
       room.participants.forEach((participantId) => {
@@ -172,15 +179,30 @@ export const getUsers = async (req, res) => {
       });
     });
 
-    // 4. Map the users and append the `added` boolean
-    const usersWithAddedStatus = users.map((user) => {
+    // 5. Extract all user IDs that have a pending request from current user
+    const requestedUserIds = new Set(
+      sentRequests.map((req) => req.receiver.toString()),
+    );
+
+    // 6. Map the users and determine the `status`
+    const usersWithStatus = users.map((user) => {
+      let status = "add";
+      const userIdStr = user._id.toString();
+
+      if (connectedUserIds.has(userIdStr)) {
+        status = "added";
+      } else if (requestedUserIds.has(userIdStr)) {
+        status = "requested";
+      }
+
       return {
         ...user,
-        added: connectedUserIds.has(user._id.toString()),
+        status,
+        added: status === "added", // Keep for backward compatibility if needed
       };
     });
 
-    return res.status(200).json({ success: true, users: usersWithAddedStatus });
+    return res.status(200).json({ success: true, users: usersWithStatus });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: error.message });

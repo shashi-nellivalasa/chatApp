@@ -1,0 +1,110 @@
+.saved-chats-container {
+  padding: 20px;
+  color: #fff;
+  height: 100%;
+  overflow-y: auto;
+}
+
+h2 {
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.empty-msg {
+  color: #777;
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.saved-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 15px;
+  transition: background 0.2s;
+  cursor: context-menu;
+}
+
+.saved-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.content {
+  color: #ddd;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #aaa;
+}
+
+.context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 150px;
+}
+
+.context-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu li {
+  padding: 10px 15px;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.2s;
+}
+
+.context-menu li:hover {
+  background: #f0f0f0;
+}

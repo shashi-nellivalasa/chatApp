@@ -5,6 +5,7 @@ import { Account } from './account/account';
 import { ChatList } from './chat-list/chat-list';
 import { Search } from './search/search';
 import { SavedChats } from './saved-chats/saved-chats';
+import { Notifications } from './notifications/notifications';
 
 const routes: Routes = [
   {
@@ -16,6 +17,7 @@ const routes: Routes = [
       { path: 'account', component: Account },
       { path: 'search', component: Search },
       { path: 'savedChats', component: SavedChats },
+      { path: 'notifications', component: Notifications },
     ],
   },
 ];

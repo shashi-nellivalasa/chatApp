@@ -77,9 +77,7 @@ export class Search implements OnInit {
     }
   }
 
-  addContact(event: Event, user: usersModel) {
-    event.stopPropagation(); // Prevents row click (selectUser) from triggering
-
+  sendRequest(user: usersModel) {
     if (!this.currentUserId) {
       this.utils.error('Error', 'Current user not identified. Please login again.');
       return;
@@ -87,21 +85,47 @@ export class Search implements OnInit {
 
     const targetUserId = user._id;
 
-    this.chatListService.createRoom([this.currentUserId, targetUserId]).subscribe({
+    this.chatListService.sendFriendRequest(targetUserId).subscribe({
       next: (res: any) => {
-        console.log('Room created successfully', res);
-        this.utils.success('Success', `Added ${user.userName}`);
+        console.log('Friend request sent successfully', res);
+        this.utils.success('Success', `Friend request sent to ${user.userName}`);
         // Visually update the UI right away
-        user.added = true;
+        user.status = 'requested';
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Failed to create room', err);
-        this.utils.error('Error', 'Could not add the contact at this time.');
+        console.error('Failed to send friend request', err);
+        this.utils.error('Error', err.error?.message || 'Could not send the friend request.');
         this.cdr.markForCheck();
       },
     });
   }
 
-  sendRequest(user: usersModel) {}
+  cancelRequest(user: usersModel) {
+    this.chatListService.cancelFriendRequest(user._id).subscribe({
+      next: (res: any) => {
+        this.utils.success('Success', `Cancelled request to ${user.userName}`);
+        user.status = 'add';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to cancel request', err);
+        this.utils.error('Error', err.error?.message || 'Could not cancel the request.');
+      },
+    });
+  }
+
+  removeContact(user: usersModel) {
+    this.chatListService.removeFriend(user._id).subscribe({
+      next: (res: any) => {
+        this.utils.success('Success', `Removed ${user.userName} from friends`);
+        user.status = 'add';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to remove friend', err);
+        this.utils.error('Error', err.error?.message || 'Could not remove friend.');
+      },
+    });
+  }
 }

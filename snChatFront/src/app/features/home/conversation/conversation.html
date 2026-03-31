@@ -19,12 +19,26 @@
                 msg.sender?._id === currentUserId ? 'var(--accent-color, #007bff)' : '#f1f1f1'
               "
               [style.color]="msg.sender?._id === currentUserId ? 'white' : 'black'"
-              style="padding: 0.5rem 1rem; border-radius: 15px; width: fit-content; max-width: 80%"
+              style="padding: 0.5rem 1rem; border-radius: 15px; width: fit-content; max-width: 80%; cursor: context-menu;"
+              (contextmenu)="onRightClick($event, msg)"
             >
               {{ msg.content }}
             </div>
           }
         </div>
+
+        @if (showContextMenu) {
+          <div
+            class="context-menu"
+            [style.top.px]="contextMenuY"
+            [style.left.px]="contextMenuX"
+            (click)="$event.stopPropagation()"
+          >
+            <ul>
+              <li (click)="saveMsg()">Save Message</li>
+            </ul>
+          </div>
+        }
 
         <!-- Input bar — stays at bottom of .chats flex column -->
         <div class="chat-input">

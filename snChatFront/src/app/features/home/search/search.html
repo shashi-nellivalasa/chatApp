@@ -49,9 +49,9 @@
             @if (user.status == 'add') {
               <button (click)="sendRequest(user)">Add</button>
             } @else if (user.status == 'requested') {
-              <button disabled>Requested</button>
+              <button (click)="cancelRequest(user)" class="btn-cancel">Cancel</button>
             } @else if (user.status == 'added') {
-              <button disabled>Added</button>
+              <button (click)="removeContact(user)" class="btn-remove">Remove</button>
             }
           </td>
         </tr>

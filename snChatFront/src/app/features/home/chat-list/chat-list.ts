@@ -1,5 +1,6 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Conversation } from '../conversation/conversation';
 import { ChatListService } from '../../../shared/services/chat-list.service';
 import { AuthenticationService } from '../../../shared/services/authentication.service';
@@ -20,6 +21,7 @@ export class ChatList {
     private chatListService: ChatListService,
     private cdr: ChangeDetectorRef,
     private authService: AuthenticationService,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -54,6 +56,16 @@ export class ChatList {
               status: otherUser?.status || 'offline',
             };
           });
+
+          // If there's a roomId in query params, auto-select it
+          const roomId = this.route.snapshot.queryParamMap.get('room');
+          if (roomId) {
+            const index = this.chatlist.findIndex((c) => c.roomId === roomId);
+            if (index !== -1) {
+              this.selectChat(index);
+            }
+          }
+
           this.cdr.markForCheck();
         }
       },

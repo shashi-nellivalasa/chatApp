@@ -8,12 +8,14 @@ import {
   ViewChild,
   ElementRef,
   AfterViewChecked,
+  HostListener,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { SocketService } from '../../../shared/services/socket.service';
 import { ChatListService } from '../../../shared/services/chat-list.service';
 import { AuthenticationService } from '../../../shared/services/authentication.service';
+import { Utils } from '../../../shared/services/utils.service';
 
 @Component({
   selector: 'app-conversation',
@@ -38,8 +40,14 @@ export class Conversation implements OnChanges, OnDestroy, AfterViewChecked {
     private socketService: SocketService,
     private chatListService: ChatListService,
     private authService: AuthenticationService,
+    private utils: Utils, // Added for success/error messages
     private cdr: ChangeDetectorRef,
   ) {}
+
+  showContextMenu = false;
+  contextMenuX = 0;
+  contextMenuY = 0;
+  selectedMessageForMenu: any = null;
 
   ngOnInit() {
     this.authService.getCurrentUser().subscribe({
@@ -131,5 +139,34 @@ export class Conversation implements OnChanges, OnDestroy, AfterViewChecked {
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
+  }
+
+  onRightClick(event: MouseEvent, message: any) {
+    event.preventDefault();
+    this.selectedMessageForMenu = message;
+    this.contextMenuX = event.clientX;
+    this.contextMenuY = event.clientY;
+    this.showContextMenu = true;
+  }
+
+  saveMsg() {
+    if (!this.selectedMessageForMenu) return;
+
+    this.chatListService.saveMessage(this.selectedMessageForMenu._id).subscribe({
+      next: (res: any) => {
+        this.utils.success('Success', res.message || 'Message saved');
+        this.closeContextMenu();
+      },
+      error: (err) => {
+        this.utils.error('Error', err.error?.message || 'Failed to save message');
+        this.closeContextMenu();
+      },
+    });
+  }
+
+  @HostListener('document:click')
+  closeContextMenu() {
+    this.showContextMenu = false;
+    this.selectedMessageForMenu = null;
   }
 }

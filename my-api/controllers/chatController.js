@@ -1,6 +1,8 @@
 import Room from "../models/room.js";
 import Message from "../models/message.js";
 import FriendRequest from "../models/friendRequest.js";
+import SavedMessage from "../models/savedMessage.js";
+import redisEventBus from "../lib/redisEventBus.js";
 
 // Get all rooms for the authenticated user
 export const getRooms = async (req, res) => {
@@ -129,6 +131,9 @@ export const createMessage = async (req, res) => {
     });
 
     res.status(201).json({ success: true, message: populatedMessage });
+
+    // Publish to Message Queue
+    redisEventBus.publish('message.created', populatedMessage);
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: error.message });
@@ -244,5 +249,192 @@ export const getFriendRequests = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+export const rejectFriendRequest = async (req, res) => {
+  try {
+    const { requestId } = req.body;
+    const userId = req.user._id;
+
+    const request = await FriendRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    if (request.receiver.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    request.status = "rejected";
+    await request.save();
+
+    res.json({ success: true, message: "Friend request rejected" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getNotifications = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // 1. Get pending friend requests
+    const friendRequests = await FriendRequest.find({
+      receiver: userId,
+      status: "pending",
+    }).populate("sender", "userName firstName lastName profilePicUrl");
+
+    // 2. Get unread messages
+    // First find all rooms the user is in
+    const rooms = await Room.find({ participants: userId });
+
+    // For each room, find unread messages from others
+    const unreadMessagesData = [];
+    for (const room of rooms) {
+      const unreadCount = await Message.countDocuments({
+        room: room._id,
+        sender: { $ne: userId },
+        isRead: false,
+      });
+
+      if (unreadCount > 0) {
+        // Get the latest unread message for context
+        const lastUnread = await Message.findOne({
+          room: room._id,
+          sender: { $ne: userId },
+          isRead: false,
+        })
+          .sort({ createdAt: -1 })
+          .populate("sender", "userName profilePicUrl");
+
+        unreadMessagesData.push({
+          roomId: room._id,
+          unreadCount,
+          lastMessage: lastUnread,
+        });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      friendRequests,
+      unreadMessages: unreadMessagesData,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const markMessageAsRead = async (req, res) => {
+  try {
+    const { roomId } = req.body;
+    const userId = req.user._id;
+
+    await Message.updateMany(
+      { room: roomId, sender: { $ne: userId }, isRead: false },
+      { isRead: true }
+    );
+
+    res.json({ success: true, message: "Messages marked as read" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const cancelFriendRequest = async (req, res) => {
+  try {
+    const { receiverId } = req.body;
+    const senderId = req.user._id;
+
+    const request = await FriendRequest.findOneAndDelete({
+      sender: senderId,
+      receiver: receiverId,
+      status: "pending",
+    });
+
+    if (!request) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Request not found or already handled." });
+    }
+
+    res.json({ success: true, message: "Friend request cancelled." });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const removeFriend = async (req, res) => {
+  try {
+    const { friendId } = req.body;
+    const userId = req.user._id;
+
+    // 1. Delete the room between them
+    const room = await Room.findOneAndDelete({
+      participants: { $all: [userId, friendId], $size: 2 },
+    });
+
+    if (room) {
+      // 2. Delete all messages in that room
+      await Message.deleteMany({ room: room._id });
+    }
+
+    // 3. Delete any friend requests between them (accepted, pending, or rejected)
+    await FriendRequest.deleteMany({
+      $or: [
+        { sender: userId, receiver: friendId },
+        { sender: friendId, receiver: userId },
+      ],
+    });
+
+    res.json({ success: true, message: "Friend removed successfully." });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const saveMessage = async (req, res) => {
+  try {
+    const { messageId } = req.body;
+    const userId = req.user._id;
+
+    const existing = await SavedMessage.findOne({
+      user: userId,
+      message: messageId,
+    });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Message already saved" });
+    }
+
+    await SavedMessage.create({ user: userId, message: messageId });
+    res
+      .status(201)
+      .json({ success: true, message: "Message saved successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getSavedMessages = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const saved = await SavedMessage.find({ user: userId })
+      .populate({
+        path: "message",
+        populate: {
+          path: "sender",
+          select: "userName profilePicUrl",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, saved });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };

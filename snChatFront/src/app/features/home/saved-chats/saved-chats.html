@@ -1,1 +1,37 @@
-<p>saved-chats works!</p>
+<div class="saved-chats-container">
+  <h2>Saved Messages</h2>
+
+  <div *ngIf="loading" class="loading">Loading saved messages...</div>
+
+  <div *ngIf="!loading">
+    <div *ngIf="savedMessages.length === 0" class="empty-msg">You haven't saved any messages yet.</div>
+
+    <div class="message-list">
+      <div *ngFor="let item of savedMessages" class="saved-item" (contextmenu)="onRightClick($event, item)">
+        <div class="user-info">
+          <img [src]="item.message.sender.profilePicUrl || 'assets/default-avatar.png'" alt="avatar" class="avatar" />
+          <div class="details">
+            <span class="username">{{ item.message.sender.userName }}</span>
+            <span class="timestamp">{{ item.createdAt | date: 'short' }}</span>
+          </div>
+        </div>
+        <div class="content">
+          {{ item.message.content }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (showContextMenu) {
+    <div
+      class="context-menu"
+      [style.top.px]="contextMenuY"
+      [style.left.px]="contextMenuX"
+      (click)="$event.stopPropagation()"
+    >
+      <ul>
+        <li (click)="goToChat()">Go to Chat</li>
+      </ul>
+    </div>
+  }
+</div>

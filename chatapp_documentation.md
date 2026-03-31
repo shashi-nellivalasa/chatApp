@@ -61,6 +61,7 @@ graph LR
 | Auth | JSON Web Tokens (JWT) + bcryptjs |
 | Image processing | Sharp (resize, WebP compress) |
 | File upload | Multer (memory storage) |
+| Message Queue | Redis Pub/Sub (ioredis) |
 | Dev tooling | Nodemon, Angular CLI, angular-cli-ghpages |
 | Deployment | GitHub Pages (frontend), Node server (backend) |
 
@@ -115,7 +116,8 @@ chatApp/
                 │   ├── socket.service.ts
                 │   └── utils.service.ts
                 ├── guards/
-                │   └── auth.guard.ts
+                │   ├── auth.guard.ts
+                │   └── guest.guard.ts
                 ├── models/
                 │   ├── auth-models.ts
                 │   ├── account-model.ts
@@ -198,7 +200,7 @@ All protected routes require the HTTP header: `token: <JWT>`
 | `POST` | `/auth/signIn` | ❌ | Login, returns JWT |
 | `POST` | `/auth/signOut` | ✅ | Sets user status to `offline` |
 | `GET` | `/auth/me` | ✅ | Returns current user profile |
-| `GET` | `/auth/` | ✅ | Returns all users with `added` flag |
+| `GET` | `/auth/` | ✅ | Returns all users with `status` ('add', 'requested', 'added') |
 | `POST` | `/auth/uploadProfilePic` | ✅ | Upload profile picture (multipart/form-data, field: `profilePic`, max 5MB) |
 | `GET` | `/health` | ❌ | DB health check |
 
@@ -228,7 +230,14 @@ Password policy: ≥8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special charac
 | `POST` | `/api/rooms` | Create a new room with given `participants` |
 | `GET` | `/api/rooms/:id` | Get a single room by ID |
 | `GET` | `/api/rooms/:id/messages` | Get all messages in a room (sorted by `createdAt` asc) |
-| `POST` | `/api/rooms/:id/messages` | Send a new message to a room |
+| `POST` | `/api/friend-request/reject` | Reject a pending friend request |
+| `POST` | `/api/friend-request/cancel` | Cancel a pending friend request (by sender) |
+| `POST` | `/api/friend/remove` | Remove a friend (deletes room and requests) |
+| `POST` | `/api/messages/save` | Save a specific message for the current user |
+| `GET` | `/api/messages/saved` | Get all saved messages for the current user |
+| `GET` | `/api/notifications` | Get unread messages and friend requests |
+| `POST` | `/api/messages/mark-as-read` | Mark all messages in a room as read |
+| `POST` | `/api/friend-request/reject` | Reject a pending friend request |
 
 ---
 
@@ -283,7 +292,8 @@ AppModule (root)
               ├── Conversation (child of ChatList)
               ├── Account
               ├── Search
-              └── SavedChats
+              ├── SavedChats
+              └── Notifications
 ```
 
 ### Routing
@@ -292,12 +302,13 @@ AppModule (root)
 |---|---|---|
 | `/` | Redirects to `/features` | — |
 | `/features` | Redirects to `/features/authentication` | — |
-| `/features/authentication` | `AuthenticationModule` | — |
+| `/features/authentication` | `AuthenticationModule` | [guestGuard](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/guards/guest.guard.ts) |
 | `/features/home` | `HomeModule` | [authGuard](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/guards/auth.guard.ts#4-15) |
 | `/features/home/chat-list` | [ChatList](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/chat-list/chat-list.ts#7-72) | inherited |
 | `/features/home/account` | [Account](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/account/account.ts#7-73) | inherited |
 | `/features/home/search` | [Search](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/search/search.ts#9-111) | inherited |
-| `/features/home/savedChats` | `SavedChats` | inherited |
+| `/features/home/savedChats` | [SavedChats](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/saved-chats/saved-chats.ts) | inherited |
+| `/features/home/notifications` | [Notifications](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/notifications/notifications.ts) | inherited |
 
 ### Components
 
@@ -320,11 +331,23 @@ Key real-time component. Implements [OnChanges](file:///c:/Users/HP/Desktop/Proj
 - Loads current user profile on [ngOnInit](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/chat-list/chat-list.ts#25-41).
 - Provides a profile picture upload flow: file picker → `FileReader` preview → `AuthenticationService.uploadProfilePic()`.
 
-#### [Search](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/search/search.ts#9-111) ([search/search.ts](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/search/search.ts))
-- Loads all users from `GET /auth/`, filters out the current user.
-- Live search by `userName` or `firstName`.
-- **Add Contact** button calls `ChatListService.createRoom([currentUserId, targetUserId])` and marks the user as `added` in the UI.
+#### [Search](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/search/search.ts#9-111)
+- Displays all users and their relationship status with the current user (`add`, `requested`, `added`).
+- **Add Contact** button calls `ChatListService.sendFriendRequest()` and updates status to `requested`.
+- **Cancel Request** button calls `ChatListService.cancelFriendRequest()` and updates status to `add`.
+- **Remove Contact** button calls `ChatListService.removeFriend()` and updates status to `add`.
 - Uses PrimeNG `TableModule` for displaying the user list.
+- **Context Menu**: Right-clicking a message bubble shows an option to "Save Message", which persists it to the user's saved collection via `ChatListService.saveMessage()`.
+
+#### [SavedChats](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/saved-chats/saved-chats.ts)
+- Fetches all saved messages for the current user via `ChatListService.getSavedMessages()`.
+- Displays saved messages with sender info and timestamp.
+- **Context Menu**: Right-clicking a saved message shows an option to "Go to Chat", which navigates back to the original room in the `ChatList` component using a `room` query parameter.
+
+#### [Notifications](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/notifications/notifications.ts)
+- Fetches pending friend requests and unread message summaries via `ChatListService.getNotifications()`.
+- Allows accepting or rejecting friend requests.
+- Shows unread message counts per room and provides a link to jump to the chat.
 
 ---
 
@@ -351,6 +374,9 @@ Wraps all `/api/*` HTTP calls for chat features.
 | [createRoom(participants)](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/services/chat-list.service.ts#19-25) | `POST /api/rooms` | Create new room |
 | [getMessages(roomId)](file:///c:/Users/HP/Desktop/Projects/chatApp/my-api/controllers/chatController.js#73-87) | `GET /api/rooms/:id/messages` | Message history |
 | [sendMessage(roomId, content)](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/features/home/conversation/conversation.ts#79-106) | `POST /api/rooms/:id/messages` | Persist message |
+| [sendFriendRequest(targetUserId)](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/services/chat-list.service.ts#38-42) | `POST /api/friend-request` | Send friend request |
+| [saveMessage(messageId)](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/services/chat-list.service.ts#69-73) | `POST /api/messages/save` | Save message |
+| [getSavedMessages()](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/services/chat-list.service.ts#75-79) | `GET /api/messages/saved` | Fetch saved messages |
 
 #### [SocketService](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/services/socket.service.ts#7-65)
 Manages the Socket.IO connection lifecycle.
@@ -372,6 +398,11 @@ A helper service for consistent toast/notification messages (warn, error, succes
 A functional `CanActivateFn`. Reads `accountToken` from `localStorage`.
 - **Present** → allows navigation.
 - **Missing** → redirects to `/features/authentication`.
+376: 
+377: #### [guestGuard](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/guards/guest.guard.ts) ([guest.guard.ts](file:///c:/Users/HP/Desktop/Projects/chatApp/snChatFront/src/app/shared/guards/guest.guard.ts))
+A functional `CanActivateFn`. Reads `accountToken` from `localStorage`.
+- **Present** → redirects to `/features/home`.
+- **Missing** → allows navigation.
 
 ---
 
@@ -434,6 +465,20 @@ sequenceDiagram
 ```
 
 > Messages are always persisted first via HTTP before being broadcast. A user who reconnects can fetch historical messages reliably.
+
+---
+
+## Message Queue / Event System (Redis)
+
+To decouple internal services and improve real-time event distribution, the application utilizes **Redis Pub/Sub** as an Event Bus.
+
+### Components
+
+- **`lib/redisEventBus.js`**: A custom wrapper around `ioredis`, creating dedicated `pub` and `sub` clients. It provides `publish()` and `subscribe()` methods.
+- **Publishing (`chatController.js`)**: When a user creates a new message via the REST API (`POST /api/rooms/:id/messages`), the controller publishes a `message.created` event to the Redis Event Bus with the message payload.
+- **Subscribing (`server.js`)**: The main Node.js server subscribes to the `message.created` channel on startup. On receiving a message, it emits the `receive_message` Socket.io event to clients in the target room.
+
+This Event Driven Architecture (EDA) makes it easier to extract services into separate Node.js processes in the future, as inter-service communication over Redis is already established.
 
 ---
 

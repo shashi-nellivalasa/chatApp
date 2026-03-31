@@ -1,11 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { authGuard } from '../shared/guards/auth.guard';
+import { guestGuard } from '../shared/guards/guest.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: 'authentication', pathMatch: 'full' },
   {
     path: 'authentication',
+    canActivate: [guestGuard],
     // dynamic import: path matches existing file `authentication-module.ts`
     loadChildren: () =>
       import('./authentication/authentication-module').then((m) => m.AuthenticationModule),

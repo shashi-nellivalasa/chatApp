@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import userRouter from "./routes/userRoutes.js";
 import chatRouter from "./routes/chatRoutes.js";
 import mongoose from "mongoose";
+import redisEventBus from "./lib/redisEventBus.js";
 
 dotenv.config();
 const app = express();
@@ -97,6 +98,16 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
+});
+
+// Subscribe to backend events via Message Queue
+redisEventBus.subscribe("message.created", (messageData) => {
+  // When a message is created via API, emit to the specific room
+  // Extract roomId handling populated or unpopulated `room` object
+  const roomId = messageData.room?._id || messageData.room;
+  if (roomId) {
+    io.to(roomId.toString()).emit("receive_message", messageData);
+  }
 });
 
 server.listen(process.env.PORT || 3000, () => {

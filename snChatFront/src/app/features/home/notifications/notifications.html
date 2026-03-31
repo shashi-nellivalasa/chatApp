@@ -1,0 +1,48 @@
+<div class="notifications-container">
+  <h2>Notifications</h2>
+
+  <div *ngIf="loading" class="loading">Loading notifications...</div>
+
+  <div *ngIf="!loading">
+    <!-- Friend Requests Section -->
+    <section class="notification-section">
+      <h3>Friend Requests</h3>
+      <div *ngIf="friendRequests.length === 0" class="empty-msg">No pending friend requests.</div>
+      <div class="request-list">
+        <div *ngFor="let request of friendRequests" class="notification-item">
+          <div class="user-info">
+            <img [src]="request.sender.profilePicUrl || 'assets/default-avatar.png'" alt="avatar" class="avatar" />
+            <div class="details">
+              <span class="username">{{ request.sender.userName }}</span>
+              <span class="name">{{ request.sender.firstName }} {{ request.sender.lastName }}</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn accept" (click)="acceptRequest(request._id)">Accept</button>
+            <button class="btn reject" (click)="rejectRequest(request._id)">Reject</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Unread Messages Section -->
+    <section class="notification-section">
+      <h3>Unread Messages</h3>
+      <div *ngIf="unreadMessages.length === 0" class="empty-msg">No unread messages.</div>
+      <div class="message-list">
+        <div *ngFor="let item of unreadMessages" class="notification-item message-item" (click)="goToChat(item.roomId)">
+          <div class="user-info">
+            <img [src]="item.lastMessage.sender.profilePicUrl || 'assets/default-avatar.png'" alt="avatar" class="avatar" />
+            <div class="details">
+              <span class="username">{{ item.lastMessage.sender.userName }}</span>
+              <p class="last-msg">{{ item.lastMessage.content }}</p>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="unread-badge">{{ item.unreadCount }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
